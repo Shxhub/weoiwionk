@@ -1,0 +1,32 @@
+name: Create Torrent
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  name: "Torrent Name"
+  comment: "Description of the torrent content"
+  url: "URL to the direct file download"
+  file_name: "File Name of the downloaded file"
+  piece_size: 19
+
+jobs:
+  create_torrent:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install mktorrent
+        run: sudo apt-get install mktorrent
+
+      - name: Download file
+        run: wget -nv -O "${{ env.file_name }}" "${{ env.url }}"
+
+      - name: Create torrent using mktorrent
+        run: mktorrent -c "${{ env.comment }}" -l ${{ env.piece_size }} -o "${{ env.name }}.torrent" -w "${{ env.url }}" "${{ env.file_name }}"
+
+      - name: Upload torrent file
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ env.name }}
+          path: ${{ env.name }}.torrent
